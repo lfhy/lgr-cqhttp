@@ -19,3 +19,7 @@ go-cqhttp
 
 # windwos rc
 *.syso
+
+
+run.log
+gocq
