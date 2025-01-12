@@ -38,6 +38,7 @@ type Account struct {
 	SignServers       []SignServer `yaml:"sign-servers"`
 	MaxCheckCount     uint         `yaml:"max-check-count"`
 	SignServerTimeout uint         `yaml:"sign-server-timeout"`
+	Proxy             string       `yaml:"proxy"` // 代理服务器
 }
 
 // SignServer 签名服务器

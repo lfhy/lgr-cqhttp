@@ -1,0 +1,55 @@
+on:
+  push:
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - '**.yml'
+  pull_request:
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - '**.yml'
+
+name: Test & Lint
+
+env:
+  GO111MODULE: on
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '^1.23'
+          cache: false
+      - run: go get
+      - run: go test -v -race ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '^1.23'
+          cache: false
+      - run: go get
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: GolangCI-Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: 'v1.61.0'
+          args: '--timeout 9999s'
+          only-new-issues: ${{ github.event.name == 'pull_request' }}
+          skip-save-cache: true

@@ -41,6 +41,7 @@ var (
 	SignServers         []config.SignServer // 使用特定的服务器进行签名
 	HTTPTimeout         int                 // download 超时时间
 	SignServerTimeout   int                 // 签名服务器超时时间
+	ProxyServer         string              // 代理服务器
 
 	PostFormat        string                 // 上报格式 string or array
 	Proxy             string                 // 存储 proxy_rewrite,用于设置代理
@@ -92,6 +93,7 @@ func Init() {
 		SignServers = conf.Account.SignServers
 		HTTPTimeout = conf.Message.HTTPTimeout
 		SignServerTimeout = int(conf.Account.SignServerTimeout)
+		ProxyServer = conf.Account.Proxy
 	}
 	{ // others
 		Proxy = conf.Message.ProxyRewrite

@@ -264,6 +264,7 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				Data: data,
 			}
 		default:
+
 			continue
 		}
 		r = append(r, m)

@@ -26,7 +26,7 @@ type MSG = map[string]any
 func VersionNameCompare(current, remote string) bool {
 	defer func() { // 应该不会panic， 为了保险还是加个
 		if err := recover(); err != nil {
-			log.Warn("检查更新失败！")
+			log.Warn("检查更新失败:", err)
 		}
 	}()
 	sp := regexp.MustCompile(`v(\d+)\.(\d+)\.(\d+)-?(.+)?`)

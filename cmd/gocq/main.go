@@ -6,8 +6,10 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path"
@@ -35,7 +37,9 @@ import (
 	"github.com/Mrs4s/go-cqhttp/internal/download"
 	"github.com/Mrs4s/go-cqhttp/internal/selfdiagnosis"
 	"github.com/Mrs4s/go-cqhttp/internal/selfupdate"
+	"github.com/Mrs4s/go-cqhttp/modules/config"
 	"github.com/Mrs4s/go-cqhttp/modules/servers"
+	"github.com/Mrs4s/go-cqhttp/pkg/util"
 	"github.com/Mrs4s/go-cqhttp/server"
 )
 
@@ -392,7 +396,7 @@ func LoginInteract() {
 //   - dump stack: syscall.SIGQUIT, syscall.SIGUSR1
 func WaitSignal() {
 	go func() {
-		selfupdate.CheckUpdate()
+		// selfupdate.CheckUpdate()
 		selfdiagnosis.NetworkDiagnosis(cli)
 	}()
 
@@ -430,7 +434,30 @@ func PasswordHashDecrypt(encryptedPasswordHash string, key []byte) ([]byte, erro
 	return result, nil
 }
 
+const (
+	InternalSignServer = "https://api.3000y.ac.cn/v1/sign"
+)
+
+type SignServer struct {
+	Server []string `json:"Server"`
+}
+
 func newClient(app *auth.AppInfo) *client.QQClient {
+	if len(base.SignServers) == 0 {
+		resp, err := util.GetProxyClient(base.ProxyServer).Get(InternalSignServer)
+		if err == nil {
+			defer resp.Body.Close()
+			data, err := io.ReadAll(resp.Body)
+			if err == nil {
+				var servers SignServer
+				json.Unmarshal(data, &servers)
+				base.SignServers = append(base.SignServers, config.SignServer{URL: InternalSignServer})
+				for _, server := range servers.Server {
+					base.SignServers = append(base.SignServers, config.SignServer{URL: server})
+				}
+			}
+		}
+	}
 	signUrls := make([]string, 0, len(base.SignServers))
 	for _, s := range base.SignServers {
 		u, err := url.Parse(s.URL)
