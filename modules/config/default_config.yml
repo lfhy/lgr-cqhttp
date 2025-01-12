@@ -56,11 +56,11 @@ message:
   # 下载图片等请求网络代理
   proxy-rewrite: ''
   # 是否上报自身消息
-  report-self-message: false
+  report-self-message: true
   # 移除服务端的Reply附带的At
-  remove-reply-at: false
+  remove-reply-at: true
   # 为Reply附加更多信息
-  extra-reply-data: false
+  extra-reply-data: true
   # 跳过 Mime 扫描, 忽略错误数据
   skip-mime-scan: false
   # 是否自动转换 WebP 图片

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	oidb2 "github.com/LagrangeDev/LagrangeGo/client/packets/pb/service/oidb"
-	"github.com/sirupsen/logrus"
 
 	"github.com/LagrangeDev/LagrangeGo/client/packets/pb/message"
 	"github.com/LagrangeDev/LagrangeGo/internal/proto"
@@ -163,7 +162,7 @@ func ParseMessageElements(msg []*message.Elem) []IMessageElement {
 		}
 
 		if elem.MarketFace != nil && len(elem.MarketFace.FaceId) > 5 {
-			logrus.Printf("elem.MarketFace: %+v\n", elem.MarketFace)
+			// logrus.Printf("elem.MarketFace: %+v\n", elem.MarketFace)
 			id := hex.EncodeToString(elem.MarketFace.FaceId)
 			r := &MarketFaceElement{
 				FaceName: string(elem.MarketFace.FaceName),
@@ -178,6 +177,7 @@ func ParseMessageElements(msg []*message.Elem) []IMessageElement {
 				Url:      fmt.Sprintf("https://gxh.vip.qq.com/club/item/parcel/item/%v/%v/raw300.gif", id[:2], id),
 			}
 			res = append(res, r)
+			skipNext = true
 		}
 
 		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
@@ -191,7 +191,7 @@ func ParseMessageElements(msg []*message.Elem) []IMessageElement {
 			res = append(res, r)
 		}
 
-		if elem.Text != nil {
+		if elem.Text != nil && elem.MarketFace == nil {
 			switch {
 			case len(elem.Text.Attr6Buf) > 0:
 				att6 := binary.NewReader(elem.Text.Attr6Buf)

@@ -887,6 +887,9 @@ func (bot *CQBot) makeImageOrVideoElem(elem msg.Element, video bool, sourceType 
 	if f == "" && u != "" {
 		f = u
 	}
+	if runtime.GOOS != `windows` && strings.HasPrefix(f, "/") && global.FileExists(f) {
+		f = "file://" + f
+	}
 	if strings.HasPrefix(f, "http") {
 		hash := md5.Sum([]byte(f))
 		cacheFile := path.Join(global.CachePath, hex.EncodeToString(hash[:])+".cache")

@@ -140,6 +140,9 @@ func (r *Reader) ReadBytes(length int) (v []byte) {
 	if r.reader != nil {
 		_, _ = r.reader.Read(v)
 	} else {
+		if (r.pos + length) > len(r.buffer) {
+			return
+		}
 		copy(v, r.buffer[r.pos:r.pos+length])
 		r.pos += length
 	}
