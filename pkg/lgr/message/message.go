@@ -3,6 +3,7 @@ package message
 // 部分借鉴 https://github.com/Mrs4s/MiraiGo/blob/master/message/message.go
 
 import (
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"reflect"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	oidb2 "github.com/LagrangeDev/LagrangeGo/client/packets/pb/service/oidb"
+	"github.com/sirupsen/logrus"
 
 	"github.com/LagrangeDev/LagrangeGo/client/packets/pb/message"
 	"github.com/LagrangeDev/LagrangeGo/internal/proto"
@@ -159,6 +161,25 @@ func ParseMessageElements(msg []*message.Elem) []IMessageElement {
 			skipNext = false
 			continue
 		}
+
+		if elem.MarketFace != nil && len(elem.MarketFace.FaceId) > 5 {
+			logrus.Printf("elem.MarketFace: %+v\n", elem.MarketFace)
+			id := hex.EncodeToString(elem.MarketFace.FaceId)
+			r := &MarketFaceElement{
+				FaceName: string(elem.MarketFace.FaceName),
+				ItemType: uint16(elem.MarketFace.ItemType),
+				FaceInfo: uint16(elem.MarketFace.FaceInfo),
+				FaceID:   id,
+				TabID:    elem.MarketFace.TabId,
+				SubType:  uint16(elem.MarketFace.SubType),
+				Key:      string(elem.MarketFace.Key),
+				Witdh:    300,
+				Height:   300,
+				Url:      fmt.Sprintf("https://gxh.vip.qq.com/club/item/parcel/item/%v/%v/raw300.gif", id[:2], id),
+			}
+			res = append(res, r)
+		}
+
 		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
 			r := &ReplyElement{
 				ReplySeq:  elem.SrcMsg.OrigSeqs[0],

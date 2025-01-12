@@ -137,7 +137,7 @@ func LoginInteract() {
 
 	if (base.Account.Uin == 0 || (base.Account.Password == "" && !base.Account.Encrypt)) && !global.PathExists("session.token") {
 		log.Warn("账号密码未配置, 将使用二维码登录.")
-		if !base.FastStart {
+		if !base.FastStart && !global.FileExists("device.json") {
 			log.Warn("将在 5秒 后继续.")
 			time.Sleep(time.Second * 5)
 		}
@@ -211,10 +211,10 @@ func LoginInteract() {
 		base.PasswordHash = md5.Sum([]byte(base.Account.Password))
 	}
 
-	if !base.FastStart {
-		log.Info("Bot将在5秒后登录并开始信息处理, 按 Ctrl+C 取消.")
-		time.Sleep(time.Second * 5)
-	}
+	// if !base.FastStart {
+	// 	log.Info("Bot将在5秒后登录并开始信息处理, 按 Ctrl+C 取消.")
+	// 	time.Sleep(time.Second * 5)
+	// }
 	log.Info("开始尝试登录并同步消息...")
 	app := auth.AppList["linux"]["3.2.15-30366"]
 	log.Infof("使用协议: %s", app.CurrentVersion)
@@ -444,6 +444,7 @@ type SignServer struct {
 
 func newClient(app *auth.AppInfo) *client.QQClient {
 	if len(base.SignServers) == 0 {
+		log.Infoln("获取签名服务器地址")
 		resp, err := util.GetProxyClient(base.ProxyServer).Get(InternalSignServer)
 		if err == nil {
 			defer resp.Body.Close()
@@ -458,6 +459,7 @@ func newClient(app *auth.AppInfo) *client.QQClient {
 			}
 		}
 	}
+	log.Infof("当前签名服务器地址:%+v", base.SignServers)
 	signUrls := make([]string, 0, len(base.SignServers))
 	for _, s := range base.SignServers {
 		u, err := url.Parse(s.URL)

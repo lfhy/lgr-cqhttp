@@ -42,6 +42,19 @@ type (
 		isLargeFace bool
 	}
 
+	MarketFaceElement struct {
+		FaceName string
+		ItemType uint16
+		FaceInfo uint16
+		FaceID   string
+		TabID    int32
+		SubType  uint16
+		Key      string
+		Witdh    uint16
+		Height   uint16
+		Url      string
+	}
+
 	ReplyElement struct {
 		ReplySeq  uint32
 		SenderUin uint32
@@ -454,4 +467,8 @@ func (e *XMLElement) Type() ElementType {
 
 func (e *ForwardMessage) Type() ElementType {
 	return Forward
+}
+
+func (e *MarketFaceElement) Type() ElementType {
+	return Image
 }

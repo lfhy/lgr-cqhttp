@@ -91,6 +91,9 @@ func NewProxyDial(prxoyUrls string) proxy.Dialer {
 }
 
 func GetProxyClient(proxystr string) *http.Client {
+	if proxystr == "" {
+		return http.DefaultClient
+	}
 	client := http.Client{Transport: &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 	}}

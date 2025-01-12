@@ -211,14 +211,6 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 		//			{K: "value", V: strconv.FormatInt(int64(o.Value), 10)},
 		//		},
 		//	}
-		// TODO MarketFaceElement
-		//case *message.MarketFaceElement:
-		//	m = msg.Element{
-		//		Type: "text",
-		//		Data: pairs{
-		//			{K: "text", V: o.Name},
-		//		},
-		//	}
 		// TODO ServiceElement
 		//case *message.ServiceElement:
 		//	m = msg.Element{
@@ -263,8 +255,18 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				Type: "image",
 				Data: data,
 			}
+		case *message.MarketFaceElement:
+			m = msg.Element{
+				Type: "mface",
+				Data: pairs{
+					{K: "emoji_package_id", V: fmt.Sprint(o.TabID)},
+					{K: "key", V: o.Key},
+					{K: "summary", V: o.FaceName},
+					{K: "url", V: o.Url},
+				},
+			}
 		default:
-
+			log.Warn("未知的消息类型:", o)
 			continue
 		}
 		r = append(r, m)
@@ -669,6 +671,10 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 	case "poke":
 		t, _ := strconv.ParseInt(elem.Get("qq"), 10, 64)
 		return &msg.Poke{Target: t}, nil
+	case "mface":
+		// 这个只有在复读的时候发送，当成普通图片发送吧
+		return bot.makeImageOrVideoElem(elem, false, sourceType)
+
 	//case "tts":
 	//	data, err := bot.Client.GetTts(elem.Get("text"))
 	//	if err != nil {
@@ -878,6 +884,9 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 func (bot *CQBot) makeImageOrVideoElem(elem msg.Element, video bool, sourceType message.SourceType) (message.IMessageElement, error) {
 	f := elem.Get("file")
 	u := elem.Get("url")
+	if f == "" && u != "" {
+		f = u
+	}
 	if strings.HasPrefix(f, "http") {
 		hash := md5.Sum([]byte(f))
 		cacheFile := path.Join(global.CachePath, hex.EncodeToString(hash[:])+".cache")
