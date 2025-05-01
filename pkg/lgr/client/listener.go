@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/LagrangeDev/LagrangeGo/client/packets/pb/system"
 
 	"github.com/LagrangeDev/LagrangeGo/internal/proto"
@@ -27,8 +29,10 @@ func decodeOlPushServicePacket(c *QQClient, pkt *network.Packet) (any, error) {
 	msg := message.PushMsg{}
 	err := proto.Unmarshal(pkt.Payload, &msg)
 	if err != nil {
+		log.Println("未知消息:", string(pkt.Payload))
 		return nil, err
 	}
+	log.Printf("解码消息:%+v", msg)
 	pkg := msg.Message
 	typ := pkg.ContentHead.Type
 	defer func() {
@@ -334,6 +338,7 @@ func decodeOlPushServicePacket(c *QQClient, pkt *network.Packet) (any, error) {
 				}
 				ev := eventConverter.ParseGroupReactionEvent(&rpb)
 				_ = c.ResolveUin(ev)
+				log.Printf("群组事件:%+v", ev)
 				c.GroupReactionEvent.dispatch(c, ev)
 			}
 		case 12: // mute

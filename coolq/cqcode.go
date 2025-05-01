@@ -266,7 +266,9 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				},
 			}
 		default:
-			log.Warn("未知的消息类型:", o)
+			if o != nil {
+				log.Warn("未知的消息类型:", o)
+			}
 			continue
 		}
 		r = append(r, m)

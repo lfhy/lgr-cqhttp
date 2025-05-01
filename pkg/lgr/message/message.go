@@ -112,10 +112,10 @@ func ParsePrivateMessage(msg *message.PushMsgBody) *PrivateMessage {
 			UID:      msg.ResponseHead.FromUid.Unwrap(),
 			IsFriend: true,
 		},
-		Time:     msg.ContentHead.TimeStamp.Unwrap(),
-		Elements: ParseMessageElements(msg.Body.RichText.Elems),
+		Time: msg.ContentHead.TimeStamp.Unwrap(),
 	}
 	if msg.Body != nil {
+		prvMsg.Elements = ParseMessageElements(msg.Body.RichText.Elems)
 		prvMsg.Elements = append(prvMsg.Elements, ParseMessageBody(msg.Body, false)...)
 	}
 
@@ -136,10 +136,10 @@ func ParseGroupMessage(msg *message.PushMsgBody) *GroupMessage {
 			IsFriend: false,
 		},
 		Time:           msg.ContentHead.TimeStamp.Unwrap(),
-		Elements:       ParseMessageElements(msg.Body.RichText.Elems),
 		OriginalObject: msg,
 	}
 	if msg.Body != nil {
+		grpMsg.Elements = ParseMessageElements(msg.Body.RichText.Elems)
 		grpMsg.Elements = append(grpMsg.Elements, ParseMessageBody(msg.Body, true)...)
 	}
 	return grpMsg
@@ -307,7 +307,7 @@ func ParseMessageElements(msg []*message.Elem) []IMessageElement {
 			case 48:
 				extra := &oidb2.MsgInfo{}
 				err := proto.Unmarshal(elem.CommonElem.PbElem, extra)
-				if err != nil {
+				if err != nil || len(extra.MsgInfoBody) == 0 { // 不合理的合并转发会导致越界
 					continue
 				}
 				index := extra.MsgInfoBody[0].Index
@@ -333,6 +333,7 @@ func ParseMessageElements(msg []*message.Elem) []IMessageElement {
 						Sha1:     utils.MustParseHexStr(index.Info.FileSha1),
 						Duration: index.Info.Time,
 						Node:     index,
+						MsgInfo:  extra,
 					})
 				}
 			case 3: // 闪照
