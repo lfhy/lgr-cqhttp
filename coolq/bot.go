@@ -175,7 +175,29 @@ func (bot *CQBot) uploadLocalImage(target message.Source, img *msg.LocalImage) (
 		}
 		img.Stream = bytes.NewReader(stream.Bytes())
 	}
-	return bot.Client.UploadImage(target, message.NewStreamImage(img.Stream))
+	i, err := bot.Client.UploadImage(target, img.Stream)
+	if err != nil {
+		return nil, err
+	}
+	if element, ok := i.(*message.NewTechImageElement); ok {
+		i = element.GetLegacyOrSelf()
+		switch i := i.(type) {
+		case *message.GroupImageElement:
+			i.EffectID = img.EffectID
+		case *message.FriendImageElement:
+			i.Flash = img.Flash
+		}
+		if img.Flash && target.SourceType == message.SourcePrivate { //旧包+好友 才能发送闪照，群聊闪照已下线
+			image, e := bot.Client.UploadLegacyImage(target, img.Stream)
+			if e != nil {
+				return nil, e
+			}
+			element.LegacyFriend = image.(*message.FriendImageElement)
+			element.LegacyFriend.Flash = true
+		}
+	}
+
+	return i, err
 }
 
 // uploadLocalVideo 上传本地短视频至群聊
